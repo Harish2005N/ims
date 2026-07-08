@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockSense — Inventory Management</title>
+
+  <!-- Google Fonts: Syne (display) + DM Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Phosphor Icons (lightweight icon library) -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.0.3/src/index.js"></script>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════
+       SIDEBAR NAVIGATION
+  ══════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <i class="ph-bold ph-warehouse"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">StockSense</span>
+        <span class="brand-tagline">Inventory Manager</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <i class="ph-bold ph-squares-four"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="products">
+        <i class="ph-bold ph-package"></i>
+        <span>Products</span>
+      </a>
+      <button class="sidebar-btn nav-item" id="sidebar-my-products" data-page="products" style="display: none;">
+        <i class="ph-bold ph-user-list"></i>
+        <span>My Products</span>
+      </button>
+
+      <!-- Seller Orders -->
+      <button class="sidebar-btn nav-item" id="sidebar-orders" data-page="orders" style="display: none;">
+        <i class="ph-bold ph-receipt"></i>
+        <span>My Orders</span>
+      </button>
+
+      <!-- Admin: Users Panel -->
+      <button class="sidebar-btn nav-item" id="sidebar-users" data-page="users" style="display: none;">
+        <i class="ph-bold ph-users-three"></i>
+        <span>Users</span>
+      </button>
+
+      <!-- Buyer/History -->
+      <button class="sidebar-btn nav-item" id="sidebar-purchases" data-page="purchases" style="display: none;">
+        <i class="ph-bold ph-shopping-cart"></i>
+        <span>My Purchases</span>
+      </button>
+      <a href="#" class="nav-item" id="low-stock-nav" data-page="products" data-filter="lowStock">
+        <i class="ph-bold ph-warning-circle"></i>
+        <span>Low Stock</span>
+        <span class="nav-badge" id="low-stock-badge">0</span>
+      </a>
+      <a href="#" class="nav-item" onclick="logout()">
+        <i class="ph-bold ph-sign-out"></i>
+        <span>Logout</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="seed-btn" id="seed-btn" title="Load sample data">
+        <i class="ph-bold ph-database"></i>
+        <span>Load Sample Data</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ══════════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════ -->
+  <div class="main-wrapper">
+
+    <!-- Top Header -->
+    <header class="topbar">
+      <button class="hamburger" id="hamburger">
+        <i class="ph-bold ph-list"></i>
+      </button>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-actions" id="topbar-actions" style="display:none">
+        <button class="btn btn-primary" id="topbar-add-btn">
+          <i class="ph-bold ph-plus"></i>
+          <span>Add Product</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── PAGE: Dashboard ───────────────────── -->
+    <main class="page" id="page-dashboard">
+
+      <div class="page-header">
+        <h1 class="page-title">Overview</h1>
+        <p class="page-subtitle">Welcome back — here's your inventory snapshot</p>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon"><i class="ph-bold ph-package"></i></div>
+          <div class="stat-info">
+            <span class="stat-label" id="stat-total-label">Total Products</span>
+            <span class="stat-value" id="stat-total-products">—</span>
+          </div>
+        </div>
+        <div class="stat-card stat-green" id="stat-value-card">
+          <div class="stat-icon"><i class="ph-bold ph-currency-dollar"></i></div>
+          <div class="stat-info">
+            <span class="stat-label" id="stat-value-label">Inventory Value</span>
+            <span class="stat-value" id="stat-total-value">—</span>
+          </div>
+        </div>
+        <div class="stat-card stat-purple" id="stat-revenue-card" style="display:none">
+          <div class="stat-icon"><i class="ph-bold ph-chart-line-up"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">Total Revenue</span>
+            <span class="stat-value" id="stat-total-revenue">—</span>
+          </div>
+        </div>
+        <div class="stat-card stat-amber">
+          <div class="stat-icon"><i class="ph-bold ph-warning"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">Low Stock Items</span>
+            <span class="stat-value" id="stat-low-stock">—</span>
+          </div>
+        </div>
+        <div class="stat-card stat-blue">
+          <div class="stat-icon"><i class="ph-bold ph-squares-four"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">Showing Products</span>
+            <span class="stat-value" id="stat-showing">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Low Stock Alert Banner -->
+      <div class="alert-banner" id="low-stock-alert" style="display:none">
+        <i class="ph-bold ph-warning-octagon"></i>
+        <div>
+          <strong>Low Stock Alert!</strong>
+          <span id="alert-message">Some products are running low on stock.</span>
+        </div>
+        <button class="alert-close" id="alert-close"><i class="ph-bold ph-x"></i></button>
+      </div>
+
+      <!-- Recent Products Table (preview) -->
+      <div class="section-header">
+        <h2 class="section-title">Recent Products</h2>
+        <a href="#" class="section-link" data-page="products">View all <i class="ph-bold ph-arrow-right"></i></a>
+      </div>
+      <div class="table-card" id="dashboard-table-container">
+        <div class="loading-state" id="dashboard-loading">
+          <div class="spinner"></div>
+          <p>Loading inventory data…</p>
+        </div>
+        <div id="dashboard-table-wrapper" style="display:none">
+          <table class="data-table" id="dashboard-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Qty</th>
+                <th>Selling Price</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-tbody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="dashboard-empty" style="display:none">
+          <i class="ph-bold ph-package"></i>
+          <p>No products found</p>
+          <button class="btn btn-primary" data-page="add-product">Add your first product</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── PAGE: Products List ──────────────── -->
+    <main class="page" id="page-products" style="display:none">
+
+      <div class="page-header">
+        <h1 class="page-title">Products</h1>
+        <p class="page-subtitle">Manage your entire product inventory</p>
+      </div>
+
+      <!-- Search + Filter Bar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ph-bold ph-magnifying-glass"></i>
+          <input type="text" id="search-input" placeholder="Search by name, category, supplier…" />
+          <button class="search-clear" id="search-clear" style="display:none">
+            <i class="ph-bold ph-x"></i>
+          </button>
+        </div>
+        <div class="filter-group">
+          <select id="category-filter" class="filter-select">
+            <option value="all">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Food & Beverages">Food & Beverages</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Stationery">Stationery</option>
+            <option value="Health & Beauty">Health & Beauty</option>
+            <option value="Sports">Sports</option>
+            <option value="Toys">Toys</option>
+            <option value="Automotive">Automotive</option>
+            <option value="Other">Other</option>
+          </select>
+          <label class="toggle-label">
+            <input type="checkbox" id="low-stock-filter" />
+            <span class="toggle-text"><i class="ph-bold ph-warning"></i> Low Stock Only</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Products Table -->
+      <div class="table-card">
+        <div class="loading-state" id="products-loading">
+          <div class="spinner"></div>
+          <p>Loading products…</p>
+        </div>
+        <div id="products-table-wrapper" style="display:none">
+          <table class="data-table" id="products-table">
+            <thead>
+              <tr>
+                <th>Product ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Supplier</th>
+                <th class="th-purchase-price">Purchase ₹</th>
+                <th>Selling ₹</th>
+                <th>Qty</th>
+                <th>Total Value</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="products-empty" style="display:none">
+          <i class="ph-bold ph-magnifying-glass"></i>
+          <p>No products match your search</p>
+          <button class="btn btn-outline" id="clear-search-btn">Clear filters</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── PAGE: Add / Edit Product Form ──────── -->
+    <main class="page" id="page-add-product" style="display:none">
+      <center>
+        <div class="page-header">
+          <h1 class="page-title" id="form-page-title">Add Product</h1>
+          <p class="page-subtitle" id="form-page-subtitle">Fill in the details to add a new product</p>
+        </div>
+
+        <div class="form-card">
+          <form id="product-form" novalidate>
+            <input type="hidden" id="edit-product-id" value="" />
+
+            <div class="form-grid">
+              <!-- Product Name -->
+              <div class="form-group form-span-2">
+                <label for="f-productName">Product Name <span class="required">*</span></label>
+                <input type="text" id="f-productName" placeholder="e.g. MacBook Pro 14&quot;" maxlength="100" required />
+                <span class="field-error" id="err-productName"></span>
+              </div>
+
+              <!-- Category -->
+              <div class="form-group">
+                <label for="f-category">Category <span class="required">*</span></label>
+                <select id="f-category" required>
+                  <option value="">— Select category —</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Food & Beverages">Food &amp; Beverages</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Stationery">Stationery</option>
+                  <option value="Health & Beauty">Health &amp; Beauty</option>
+                  <option value="Sports">Sports</option>
+                  <option value="Toys">Toys</option>
+                  <option value="Automotive">Automotive</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span class="field-error" id="err-category"></span>
+              </div>
+
+              <!-- Supplier -->
+              <div class="form-group">
+                <label for="f-supplier">Supplier <span class="required">*</span></label>
+                <input type="text" id="f-supplier" placeholder="e.g. Apple Inc." required />
+                <span class="field-error" id="err-supplier"></span>
+              </div>
+
+              <!-- Purchase Price -->
+              <div class="form-group">
+                <label for="f-purchasePrice">Purchase Price (₹) <span class="required">*</span></label>
+                <div class="input-prefix-wrapper">
+                  <span class="input-prefix">₹</span>
+                  <input type="number" id="f-purchasePrice" placeholder="0.00" min="0" step="0.01" required />
+                </div>
+                <span class="field-error" id="err-purchasePrice"></span>
+              </div>
+
+              <!-- Selling Price -->
+              <div class="form-group">
+                <label for="f-sellingPrice">Selling Price (₹) <span class="required">*</span></label>
+                <div class="input-prefix-wrapper">
+                  <span class="input-prefix">₹</span>
+                  <input type="number" id="f-sellingPrice" placeholder="0.00" min="0" step="0.01" required />
+                </div>
+                <span class="field-error" id="err-sellingPrice"></span>
+              </div>
+
+              <!-- Quantity -->
+              <div class="form-group">
+                <label for="f-quantity">Stock Quantity <span class="required">*</span></label>
+                <input type="number" id="f-quantity" placeholder="0" min="0" required />
+                <span class="field-error" id="err-quantity"></span>
+              </div>
+
+              <!-- Date Added -->
+              <div class="form-group">
+                <label for="f-dateAdded">Date Added</label>
+                <input type="date" id="f-dateAdded" />
+              </div>
+
+              <!-- Product Image URL -->
+              <div class="form-group form-span-2">
+                <label for="f-imageUrl">Product Image URL</label>
+                <div class="input-with-icon">
+                  <i class="ph ph-image"></i>
+                  <input type="url" id="f-imageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+              </div>
+            </div>
+
+            <!-- Profit Preview -->
+            <div class="profit-preview" id="profit-preview" style="display:none">
+              <i class="ph-bold ph-trend-up"></i>
+              <span>Profit Margin: <strong id="profit-margin-display">0%</strong></span>
+              <span class="divider">|</span>
+              <span>Total Stock Value: <strong id="stock-value-display">₹0</strong></span>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" id="form-cancel-btn">
+                <i class="ph-bold ph-x"></i> Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" id="form-submit-btn">
+                <i class="ph-bold ph-floppy-disk"></i>
+                <span id="submit-btn-text">Save Product</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </center>
+    </main>
+
+    <!-- ── PAGE: Purchase History ──────────────── -->
+    <main class="page" id="page-purchases" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title">My Purchase History</h1>
+        <p class="page-subtitle">View all your previous orders and transactions</p>
+      </div>
+
+      <div class="table-card">
+        <div class="loading-state" id="purchases-loading" style="display:none">
+          <div class="spinner"></div>
+          <p>Loading your purchases…</p>
+        </div>
+
+        <div id="purchases-table-wrapper" style="display:none">
+          <table class="data-table" id="purchases-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price ₹</th>
+                <th>Total Paid ₹</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="purchases-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="purchases-empty" style="display:none">
+          <i class="ph-bold ph-shopping-cart"></i>
+          <p>You haven't purchased anything yet</p>
+          <button class="btn btn-primary" data-page="products">Start Shopping</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── PAGE: Orders (Seller View) ──────────────── -->
+    <main id="page-orders" class="page" style="display: none;">
+      <div class="page-header">
+        <h1 class="page-title">Incoming Orders</h1>
+        <p class="page-subtitle">Track and manage purchases made by buyers</p>
+      </div>
+
+      <div class="table-card">
+        <div class="loading-state" id="orders-loading" style="display:none">
+          <div class="spinner"></div>
+          <p>Loading incoming orders…</p>
+        </div>
+
+        <div id="orders-table-wrapper" style="display:none">
+          <table class="data-table" id="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Total Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="orders-list">
+              <!-- Dynamic Content -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="orders-empty" style="display:none">
+          <i class="ph-bold ph-receipt"></i>
+          <p>No incoming orders found</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── PAGE: Users (Admin Only) ──────────────── -->
+    <main id="page-users" class="page" style="display: none;">
+      <div class="page-header">
+        <h1 class="page-title">Users Management</h1>
+        <p class="page-subtitle">View all sellers and buyers with their activity</p>
+      </div>
+
+      <div class="table-card">
+        <div class="loading-state" id="users-loading" style="display:none">
+          <div class="spinner"></div>
+          <p>Loading users…</p>
+        </div>
+
+        <div id="users-table-wrapper" style="display:none">
+          <table class="data-table" id="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Activity</th>
+                <th>Amount</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="users-empty" style="display:none">
+          <i class="ph-bold ph-users-three"></i>
+          <p>No users found</p>
+        </div>
+      </div>
+    </main>
+
+  </div><!-- /main-wrapper -->
+
+
+  <!-- ══════════════════════════════════════════
+       MODAL: Confirm Delete
+  ══════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="delete-modal" style="display:none">
+    <div class="modal">
+      <div class="modal-icon modal-icon-danger">
+        <i class="ph-bold ph-trash"></i>
+      </div>
+      <h3>Delete Product?</h3>
+      <p id="delete-modal-text">Are you sure you want to delete this product? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="delete-cancel-btn">Cancel</button>
+        <button class="btn btn-danger" id="delete-confirm-btn">
+          <i class="ph-bold ph-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MODAL: Buy Product
+  ══════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="buy-modal" style="display:none">
+    <div class="modal">
+      <div class="modal-icon modal-icon-success">
+        <i class="ph-bold ph-shopping-cart"></i>
+      </div>
+      <h3 id="buy-modal-title">Buy Product</h3>
+      <p id="buy-modal-text">Select quantity and payment method below.</p>
+      
+      <div class="modal-form">
+        <div class="form-group mb-4">
+          <label for="buy-qty">Quantity <span id="buy-max-label" class="text-muted">(Available: 0)</span></label>
+          <input type="number" id="buy-qty" value="1" min="1" class="modal-input">
+        </div>
+        <div class="form-group mb-4">
+          <label for="buy-payment">Payment Method</label>
+          <select id="buy-payment" class="modal-input">
+            <option value="Cash">Cash on Delivery</option>
+            <option value="UPI">UPI / PhonePe</option>
+            <option value="Card">Credit/Debit Card</option>
+            <option value="Bank">Bank Transfer</option>
+          </select>
+        </div>
+        
+        <div class="buy-total-card mb-4">
+          <span class="label">Total Amount:</span>
+          <span class="value" id="buy-total-display">₹0</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="buy-cancel-btn">Cancel</button>
+        <button class="btn btn-primary btn-full" id="buy-confirm-btn">
+          <i class="ph-bold ph-check-circle"></i> Confirm Purchase
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TOAST NOTIFICATION
+  ══════════════════════════════════════════ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main JS -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>
